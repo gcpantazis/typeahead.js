@@ -383,10 +383,12 @@
             }
             this.name = o.name || utils.getUniqueId();
             this.limit = o.limit || 5;
-            this.defaultSearch = o.defaultSearch;
+            this.defaultQuery = o.defaultQuery;
             this.minLength = o.minLength || 1;
             this.header = o.header;
             this.footer = o.footer;
+            this.noMatchesMessage = o.noMatchesMessage;
+            this.emptyQueryMessage = o.emptyQueryMessage;
             this.valueKey = o.valueKey || "value";
             this.template = compileTemplate(o.template, o.engine, this.valueKey);
             this.local = o.local;
@@ -824,6 +826,12 @@
                     this.isOpen && this._show();
                     elBuilder = document.createElement("div");
                     fragment = document.createDocumentFragment();
+                    if (dataset.usingDefaultQuery && dataset.noMatchesMessage && !dataset.emptyQuery) {
+                        fragment.appendChild($('<div class="tt-defaults-shown tt-no-matches"></div>').html(dataset.noMatchesMessage).get(0));
+                    }
+                    if (dataset.usingDefaultQuery && dataset.emptyQueryMessage && dataset.emptyQuery) {
+                        fragment.appendChild($('<div class="tt-defaults-shown">Defaults!</div>').html(dataset.emptyQueryMessage).get(0));
+                    }
                     utils.each(suggestions, function(i, suggestion) {
                         suggestion.dataset = dataset.name;
                         compiledHtml = dataset.template(suggestion.datum);
@@ -987,10 +995,12 @@
                     this.eventBus.trigger("selected", suggestion.datum, suggestion.dataset);
                 }
             },
-            _loadDefaultSuggestions: function() {
-                var that = this, query = this.inputView.getQuery();
+            _loadDefaultSuggestions: function(query) {
+                var that = this;
                 utils.each(this.datasets, function(i, dataset) {
-                    dataset.getSuggestions(dataset.defaultSearch, function(suggestions) {
+                    dataset.usingDefaultQuery = true;
+                    dataset.emptyQuery = utils.isBlankString(query);
+                    dataset.getSuggestions(dataset.defaultQuery, function(suggestions) {
                         if (query === that.inputView.getQuery()) {
                             that.dropdownView.renderSuggestions(dataset, suggestions);
                         }
@@ -1001,16 +1011,18 @@
                 var that = this, query = this.inputView.getQuery();
                 this._clearSuggestions();
                 if (utils.isBlankString(query)) {
-                    this._loadDefaultSuggestions();
+                    this._loadDefaultSuggestions(query);
                     return;
                 }
                 utils.each(this.datasets, function(i, dataset) {
+                    dataset.usingDefaultQuery = false;
+                    dataset.emptyQuery = false;
                     dataset.getSuggestions(query, function(suggestions) {
                         if (query === that.inputView.getQuery()) {
                             that.dropdownView.renderSuggestions(dataset, suggestions);
                         }
                         if (suggestions.length === 0) {
-                            that._loadDefaultSuggestions();
+                            that._loadDefaultSuggestions(query);
                         }
                     });
                 });

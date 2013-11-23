@@ -25,10 +25,12 @@ var Dataset = (function() {
 
     this.name = o.name || utils.getUniqueId();
     this.limit = o.limit || 5;
-    this.defaultSearch = o.defaultSearch;
+    this.defaultQuery = o.defaultQuery;
     this.minLength = o.minLength || 1;
     this.header = o.header;
     this.footer = o.footer;
+    this.noMatchesMessage = o.noMatchesMessage;
+    this.emptyQueryMessage = o.emptyQueryMessage;
     this.valueKey = o.valueKey || 'value';
     this.template = compileTemplate(o.template, o.engine, this.valueKey);
 

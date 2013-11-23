@@ -221,11 +221,15 @@ var TypeaheadView = (function() {
       }
     },
 
-    _loadDefaultSuggestions: function() {
-      var that = this, query = this.inputView.getQuery();
+    _loadDefaultSuggestions: function(query) {
+      var that = this;
 
       utils.each(this.datasets, function(i, dataset) {
-        dataset.getSuggestions(dataset.defaultSearch, function(suggestions) {
+
+        dataset.usingDefaultQuery = true;
+        dataset.emptyQuery = utils.isBlankString(query);
+
+        dataset.getSuggestions(dataset.defaultQuery, function(suggestions) {
           if (query === that.inputView.getQuery()) {
             that.dropdownView.renderSuggestions(dataset, suggestions);
           }
@@ -239,11 +243,15 @@ var TypeaheadView = (function() {
       this._clearSuggestions();
 
       if (utils.isBlankString(query)) {
-        this._loadDefaultSuggestions();
+        this._loadDefaultSuggestions(query);
         return;
       }
 
       utils.each(this.datasets, function(i, dataset) {
+
+        dataset.usingDefaultQuery = false;
+        dataset.emptyQuery = false;
+
         dataset.getSuggestions(query, function(suggestions) {
           // only render the suggestions if the query hasn't changed
           if (query === that.inputView.getQuery()) {
@@ -251,7 +259,7 @@ var TypeaheadView = (function() {
           }
 
           if ( suggestions.length === 0 ) {
-            that._loadDefaultSuggestions();
+            that._loadDefaultSuggestions(query);
           }
         });
       });

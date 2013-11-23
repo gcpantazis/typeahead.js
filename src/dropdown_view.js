@@ -228,6 +228,14 @@ var DropdownView = (function() {
         elBuilder = document.createElement('div');
         fragment = document.createDocumentFragment();
 
+        if (dataset.usingDefaultQuery && dataset.noMatchesMessage && !dataset.emptyQuery) {
+          fragment.appendChild($('<div class="tt-defaults-shown tt-no-matches"></div>').html(dataset.noMatchesMessage).get(0));
+        }
+
+        if (dataset.usingDefaultQuery && dataset.emptyQueryMessage && dataset.emptyQuery) {
+          fragment.appendChild($('<div class="tt-defaults-shown">Defaults!</div>').html(dataset.emptyQueryMessage).get(0));
+        }
+
         utils.each(suggestions, function(i, suggestion) {
           suggestion.dataset = dataset.name;
           compiledHtml = dataset.template(suggestion.datum);
