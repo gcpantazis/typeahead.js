@@ -383,6 +383,7 @@
             }
             this.name = o.name || utils.getUniqueId();
             this.limit = o.limit || 5;
+            this.defaultSearch = o.defaultSearch;
             this.minLength = o.minLength || 1;
             this.header = o.header;
             this.footer = o.footer;
@@ -914,7 +915,7 @@
             this.inputView = new InputView({
                 input: $input,
                 hint: $hint
-            }).on("focused", this._openDropdown).on("blured", this._closeDropdown).on("blured", this._setInputValueToQuery).on("enterKeyed tabKeyed", this._handleSelection).on("queryChanged", this._clearHint).on("queryChanged", this._clearSuggestions).on("queryChanged", this._getSuggestions).on("whitespaceChanged", this._updateHint).on("queryChanged whitespaceChanged", this._openDropdown).on("queryChanged whitespaceChanged", this._setLanguageDirection).on("escKeyed", this._closeDropdown).on("escKeyed", this._setInputValueToQuery).on("tabKeyed upKeyed downKeyed", this._managePreventDefault).on("upKeyed downKeyed", this._moveDropdownCursor).on("upKeyed downKeyed", this._openDropdown).on("tabKeyed leftKeyed rightKeyed", this._autocomplete);
+            }).on("focused", this._openDropdown).on("focused", this._getSuggestions).on("blured", this._closeDropdown).on("blured", this._setInputValueToQuery).on("enterKeyed tabKeyed", this._handleSelection).on("queryChanged", this._clearHint).on("queryChanged", this._getSuggestions).on("whitespaceChanged", this._updateHint).on("queryChanged whitespaceChanged", this._openDropdown).on("queryChanged whitespaceChanged", this._setLanguageDirection).on("escKeyed", this._closeDropdown).on("escKeyed", this._setInputValueToQuery).on("tabKeyed upKeyed downKeyed", this._managePreventDefault).on("upKeyed downKeyed", this._moveDropdownCursor).on("upKeyed downKeyed", this._openDropdown).on("tabKeyed leftKeyed rightKeyed", this._autocomplete);
         }
         utils.mixin(TypeaheadView.prototype, EventTarget, {
             _managePreventDefault: function(e) {
@@ -986,15 +987,30 @@
                     this.eventBus.trigger("selected", suggestion.datum, suggestion.dataset);
                 }
             },
+            _loadDefaultSuggestions: function() {
+                var that = this, query = this.inputView.getQuery();
+                utils.each(this.datasets, function(i, dataset) {
+                    dataset.getSuggestions(dataset.defaultSearch, function(suggestions) {
+                        if (query === that.inputView.getQuery()) {
+                            that.dropdownView.renderSuggestions(dataset, suggestions);
+                        }
+                    });
+                });
+            },
             _getSuggestions: function() {
                 var that = this, query = this.inputView.getQuery();
+                this._clearSuggestions();
                 if (utils.isBlankString(query)) {
+                    this._loadDefaultSuggestions();
                     return;
                 }
                 utils.each(this.datasets, function(i, dataset) {
                     dataset.getSuggestions(query, function(suggestions) {
                         if (query === that.inputView.getQuery()) {
                             that.dropdownView.renderSuggestions(dataset, suggestions);
+                        }
+                        if (suggestions.length === 0) {
+                            that._loadDefaultSuggestions();
                         }
                     });
                 });

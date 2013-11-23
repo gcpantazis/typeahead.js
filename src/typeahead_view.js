@@ -85,11 +85,11 @@ var TypeaheadView = (function() {
 
     this.inputView = new InputView({ input: $input, hint: $hint })
     .on('focused', this._openDropdown)
+    .on('focused', this._getSuggestions)
     .on('blured', this._closeDropdown)
     .on('blured', this._setInputValueToQuery)
     .on('enterKeyed tabKeyed', this._handleSelection)
     .on('queryChanged', this._clearHint)
-    .on('queryChanged', this._clearSuggestions)
     .on('queryChanged', this._getSuggestions)
     .on('whitespaceChanged', this._updateHint)
     .on('queryChanged whitespaceChanged', this._openDropdown)
@@ -221,16 +221,37 @@ var TypeaheadView = (function() {
       }
     },
 
+    _loadDefaultSuggestions: function() {
+      var that = this, query = this.inputView.getQuery();
+
+      utils.each(this.datasets, function(i, dataset) {
+        dataset.getSuggestions(dataset.defaultSearch, function(suggestions) {
+          if (query === that.inputView.getQuery()) {
+            that.dropdownView.renderSuggestions(dataset, suggestions);
+          }
+        });
+      });
+    },
+
     _getSuggestions: function() {
       var that = this, query = this.inputView.getQuery();
 
-      if (utils.isBlankString(query)) { return; }
+      this._clearSuggestions();
+
+      if (utils.isBlankString(query)) {
+        this._loadDefaultSuggestions();
+        return;
+      }
 
       utils.each(this.datasets, function(i, dataset) {
         dataset.getSuggestions(query, function(suggestions) {
           // only render the suggestions if the query hasn't changed
           if (query === that.inputView.getQuery()) {
             that.dropdownView.renderSuggestions(dataset, suggestions);
+          }
+
+          if ( suggestions.length === 0 ) {
+            that._loadDefaultSuggestions();
           }
         });
       });

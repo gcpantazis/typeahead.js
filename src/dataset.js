@@ -25,6 +25,7 @@ var Dataset = (function() {
 
     this.name = o.name || utils.getUniqueId();
     this.limit = o.limit || 5;
+    this.defaultSearch = o.defaultSearch;
     this.minLength = o.minLength || 1;
     this.header = o.header;
     this.footer = o.footer;
