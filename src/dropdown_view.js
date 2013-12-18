@@ -215,9 +215,13 @@ var DropdownView = (function() {
         $dataset = $('<div></div>')
         .addClass(datasetClassName)
         .append(dataset.header)
-        .append($suggestionsList)
-        .append(dataset.footer)
-        .appendTo(this.$menu);
+        .append($suggestionsList);
+
+        if (suggestions.length > 0) {
+          $dataset.append(dataset.footer);
+        }
+
+        $dataset.appendTo(this.$menu);
       }
 
       // suggestions to be rendered

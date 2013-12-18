@@ -819,7 +819,11 @@
                 var datasetClassName = "tt-dataset-" + dataset.name, wrapper = '<div class="tt-suggestion">%body</div>', compiledHtml, $suggestionsList, $dataset = this.$menu.find("." + datasetClassName), elBuilder, fragment, $el;
                 if ($dataset.length === 0) {
                     $suggestionsList = $(html.suggestionsList).css(css.suggestionsList);
-                    $dataset = $("<div></div>").addClass(datasetClassName).append(dataset.header).append($suggestionsList).append(dataset.footer).appendTo(this.$menu);
+                    $dataset = $("<div></div>").addClass(datasetClassName).append(dataset.header).append($suggestionsList);
+                    if (suggestions.length > 0) {
+                        $dataset.append(dataset.footer);
+                    }
+                    $dataset.appendTo(this.$menu);
                 }
                 if (suggestions.length > 0) {
                     this.isEmpty = false;
